@@ -17,6 +17,11 @@ func Register(pack map[string]*MessageBody){
 	message = pack
 }
 
+type MessageBody struct{
+	Lang map[string]string
+	Code int32
+}
+
 // Error implements the error interface.
 type Error struct {
 	Id     string `json:"id"`
@@ -32,7 +37,16 @@ func (e *Error) Error() string {
 }
 
 // New generates a custom error.
-func New(id, lang string, format string, devMessage ...interface{} ) error {
+func New(id, lang, devMessage string) error {
+	err := &Error{}
+	err.Id = id
+	err.Detail, err.Code = GetMessage(id, lang)
+	err.Status = http.StatusText(int(err.Code))
+	err.DevMessage = devMessage
+	return err
+}
+
+func Newf(id, lang string, format string, devMessage ...interface{} ) error {
 	err := &Error{}
 	err.Id = id
 	err.Detail, err.Code = GetMessage(id, lang)
@@ -51,27 +65,7 @@ func Parse(message string) (*Error, error) {
 	return e, nil
 }
 
-type MessageBody struct{
-	ID string
-	EN string
-	Code int32
-}
-
 func GetMessage(id, lang string)(detail string, code int32){
 
-	if lang == ""{
-		lang = "ID"
-	}
-	m := message[id]
-
-	// if error not defined
-	if m == nil {
-		return "NotDefErrMes", 500
-	}
-
-	if lang == "EN"{
-		return m.EN, m.Code
-	}
-
-	return m.ID, m.Code
+	return message[id].Lang[lang], message[id].Code
 }
