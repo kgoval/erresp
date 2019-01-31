@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"github.com/pkg/errors"
 )
 
 var message map[string]*MessageBody
@@ -56,13 +55,13 @@ func Newf(id, lang string, format string, devMessage ...interface{} ) error {
 }
 
 
-func Parse(message string) (*Error, error) {
+func Parse(message string) *Error {
 	e := new(Error)
 	errr := json.Unmarshal([]byte(message), e)
 	if errr != nil {
-		return nil, errors.Wrap(errr, "json unmarshal failed")
+		 e.Detail  = errr.Error()
 	}
-	return e, nil
+	return e
 }
 
 func GetMessage(id, lang string)(detail string, code int32){
